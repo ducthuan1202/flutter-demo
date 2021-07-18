@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:untitled/constants.dart';
-import 'package:untitled/story/create.dart';
+import 'package:untitled/screens/story/create.dart';
 import 'package:untitled/utils/graphql.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 

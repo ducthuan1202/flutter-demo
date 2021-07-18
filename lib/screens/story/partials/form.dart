@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:untitled/constants.dart';
 import 'package:untitled/graphql/queries/countries.dart';
 import 'package:untitled/utils/form_helpers.dart';
@@ -29,8 +28,8 @@ class StoryForm extends StatefulWidget {
 
 class _StoryFormState extends State<StoryForm> {
   final _formKey = GlobalKey<FormState>();
-  final _hashtagInputController = TextEditingController();
-
+  final _microchipInputController = TextEditingController();
+  List<Map<String, String>> countriesData = [];
   String? formValidateStatus;
 
   Map<String, dynamic> formData = {
@@ -44,8 +43,6 @@ class _StoryFormState extends State<StoryForm> {
     'microchip': '',
     'microchips': <String> [],
   };
-
-  List<Map<String, String>> countriesData = [];
 
   void handleSubmitForm(){
     final msg = _formKey.currentState!.validate() ? 'ok' : 'fail';
@@ -66,18 +63,18 @@ class _StoryFormState extends State<StoryForm> {
       setState(() {
         formData['microchips'] = [...formData['microchips'], value];
         formData['microchip'] = '';
-        _hashtagInputController.clear();
+        _microchipInputController.clear();
       });
     }
   }
 
   void handleRemoveMicrochip(String item){
-    final data = formData['hashtags'] as List;
+    final data = formData['microchips'] as List;
     final index = data.indexWhere((element) => element == item);
     if(index >= 0){
       data.removeAt(index);
       setState(() {
-        formData['hashtags'] = data;
+        formData['microchips'] = data;
       });
     }
   }
@@ -98,6 +95,31 @@ class _StoryFormState extends State<StoryForm> {
     }
   }
 
+
+  void getDropdownDataFromNetwork() async{
+    final data = await Future.wait([
+      getCountriesFromNetwork(),
+    ]);
+
+  }
+
+  List<Widget> renderMicrochips(){
+
+    final data = formData['microchips'] as List;
+
+    return data.map((dynamic item){
+      return Container(
+        margin: EdgeInsets.all(5.0),
+        child: Chip(
+          label: Text(item),
+          onDeleted: () => handleRemoveMicrochip(item),
+          deleteButtonTooltipMessage: 'remove $item ?',
+        ),
+      );
+    }).toList();
+
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -109,7 +131,7 @@ class _StoryFormState extends State<StoryForm> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _hashtagInputController.dispose();
+    _microchipInputController.dispose();
   }
 
   @override
@@ -125,19 +147,7 @@ class _StoryFormState extends State<StoryForm> {
     final keyMicrochip = 'microchip';
     final keyMicrochips = 'microchips';
 
-    List<Widget> microchipsWidget = [];
-    formData[keyMicrochips].forEach((item){
-      microchipsWidget.add(
-          Container(
-            margin: EdgeInsets.all(5.0),
-            child: Chip(
-              label: Text(item),
-              onDeleted: () => handleRemoveMicrochip(item),
-              deleteButtonTooltipMessage: 'remove $item ?',
-            ),
-          )
-      );
-    });
+    final microchipsWidget = renderMicrochips();
 
     return Container(
       padding: EdgeInsets.all(defaultPadding),
@@ -155,16 +165,16 @@ class _StoryFormState extends State<StoryForm> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  formValidateStatus!= null ? Text('Kiểm tra thông tin: ${formValidateStatus}') : Container(),
+                  formValidateStatus!= null ? Text('Kiểm tra thông tin: $formValidateStatus') : Container(),
 
-                  Text('Truyện: ${formData[keyName]}'),
-                  Text('keySpecies: ${formData[keySpecies]}'),
-                  Text('keyBreed: ${formData[keyBreed]}'),
-                  Text('keyColour: ${formData[keyColour]}'),
-                  Text('keyGender: ${formData[keyGender]}'),
-                  Text('keyDateOfBirth: ${formData[keyDateOfBirth]}'),
-                  Text('keyPurchaseAdoptionDate: ${formData[keyPurchaseAdoptionDate]}'),
-                  Text('keyMicrochips: ${(formData[keyMicrochips].join(', '))}'),
+                  Text('Nam: ${formData[keyName]}'),
+                  Text('Species: ${formData[keySpecies]}'),
+                  Text('Breed: ${formData[keyBreed]}'),
+                  Text('Colour: ${formData[keyColour]}'),
+                  Text('Gender: ${formData[keyGender]}'),
+                  Text('DateOfBirth: ${formData[keyDateOfBirth]}'),
+                  Text('PurchaseAdoptionDate: ${formData[keyPurchaseAdoptionDate]}'),
+                  Text('Microchips: ${(formData[keyMicrochips].join(', '))}'),
                 ],
               ),
             ),
@@ -301,12 +311,13 @@ class _StoryFormState extends State<StoryForm> {
 
             SizedBox(height: formElementSpace,),
 
+            // todo: microchips
             Row(
               children: [
 
                 Expanded(
                   child: TextInput(
-                      controller: _hashtagInputController,
+                      controller: _microchipInputController,
                       name: keyMicrochip,
                       initialValue: formData[keyMicrochip],
                       hintText: 'Microchip',
@@ -338,6 +349,7 @@ class _StoryFormState extends State<StoryForm> {
 
             SizedBox(height: formElementSpace,),
 
+            // todo: microchips list
             Container(
               width: double.infinity,
               child: Wrap(

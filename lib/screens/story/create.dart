@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/story/partials/form.dart';
+import 'package:untitled/screens/story/partials/form.dart';
 
 class StoryCreateScreen extends StatefulWidget {
   const StoryCreateScreen({Key? key}) : super(key: key);
