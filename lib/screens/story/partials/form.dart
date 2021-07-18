@@ -184,6 +184,8 @@ class _StoryFormState extends State<StoryForm> {
               ),
             ),
 
+            SizedBox(height: 50,),
+
             // TODO: Country demo
             SelectOptions(
               placeholder: 'Country',
@@ -202,8 +204,6 @@ class _StoryFormState extends State<StoryForm> {
             ),
 
             SizedBox(height: formElementSpace,),
-
-            SizedBox(height: 50,),
 
             // todo: name
             TextInput(
