@@ -1,23 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/constants.dart';
 import 'package:untitled/graphql/queries/countries.dart';
+import 'package:untitled/graphql/queries/species.dart';
 import 'package:untitled/utils/form_helpers.dart';
 import 'package:untitled/widgets/select_options/index.dart';
 import 'package:untitled/widgets/text_input/index.dart';
-
-const List<Map<String, String>> categories = [
-  {'id': '1', 'name': 'Ký sự'},
-  {'id': '2', 'name': 'Truyện ngắn'},
-  {'id': '3', 'name': 'Thơ ca'},
-  {'id': '4', 'name': 'Truyện cổ tích'},
-];
-
-const List<Map<String, String>> authors = [
-  {'id': '1', 'name': 'Ngô Tất Tố'},
-  {'id': '2', 'name': 'Vũ Trọng Phụng'},
-  {'id': '3', 'name': 'Nam Cao'},
-  {'id': '4', 'name': 'Nguyễn Du'},
-];
 
 class StoryForm extends StatefulWidget {
   const StoryForm({Key? key}) : super(key: key);
@@ -29,10 +16,15 @@ class StoryForm extends StatefulWidget {
 class _StoryFormState extends State<StoryForm> {
   final _formKey = GlobalKey<FormState>();
   final _microchipInputController = TextEditingController();
+  List<Map<String, String>> speciesData = [];
+  List<Map<String, String>> breedData = [];
+  List<Map<String, String>> colourData = [];
+  List<Map<String, String>> genderData = [];
   List<Map<String, String>> countriesData = [];
   String? formValidateStatus;
 
   Map<String, dynamic> formData = {
+    'country': '',
     'name': '',
     'species' : '',
     'breed' : '',
@@ -95,11 +87,20 @@ class _StoryFormState extends State<StoryForm> {
     }
   }
 
-
   void getDropdownDataFromNetwork() async{
-    final data = await Future.wait([
-      getCountriesFromNetwork(),
+    final collect = await Future.wait([
+      getSpecies(),
+      getBreeds(),
+      getColours(),
+      getGenders(),
     ]);
+
+    setState(() {
+      speciesData = collect[0];
+      breedData = collect[1];
+      colourData = collect[2];
+      genderData = collect[3];
+    });
 
   }
 
@@ -125,6 +126,7 @@ class _StoryFormState extends State<StoryForm> {
     // TODO: implement initState
     super.initState();
     getCountriesFromNetwork();
+    getDropdownDataFromNetwork();
   }
 
   @override
@@ -137,6 +139,9 @@ class _StoryFormState extends State<StoryForm> {
   @override
   Widget build(BuildContext context) {
 
+    print('--------- render widget UI');
+
+    final keyCountry = 'country';
     final keyName = 'name';
     final keySpecies = 'species';
     final keyBreed = 'breed';
@@ -179,6 +184,25 @@ class _StoryFormState extends State<StoryForm> {
               ),
             ),
 
+            // TODO: Country demo
+            SelectOptions(
+              placeholder: 'Country',
+              name: keyCountry,
+              initialValue: formData[keyCountry],
+              dataSource: countriesData,
+              validator: (String? value) => fieldValidator(
+                name: keyCountry,
+                value: value,
+                message: 'required',
+              ),
+              onChanged: (String? value) => handleFieldOnChange(
+                name: keyCountry,
+                value: value,
+              ),
+            ),
+
+            SizedBox(height: formElementSpace,),
+
             SizedBox(height: 50,),
 
             // todo: name
@@ -203,17 +227,17 @@ class _StoryFormState extends State<StoryForm> {
             SelectOptions(
               placeholder: 'Species',
               name: keySpecies,
-                initialValue: formData[keySpecies],
-                dataSource: categories,
-                validator: (String? value) => fieldValidator(
-                  name: keySpecies,
-                  value: value,
-                  message: 'required',
-                ),
-                onChanged: (String? value) => handleFieldOnChange(
-                  name: keySpecies,
-                  value: value,
-                ),
+              initialValue: formData[keySpecies],
+              dataSource: speciesData,
+              validator: (String? value) => fieldValidator(
+                name: keySpecies,
+                value: value,
+                message: 'required',
+              ),
+              onChanged: (String? value) => handleFieldOnChange(
+                name: keySpecies,
+                value: value,
+              ),
             ),
 
             SizedBox(height: formElementSpace,),
@@ -223,7 +247,7 @@ class _StoryFormState extends State<StoryForm> {
               placeholder: 'Breed',
               name: keyBreed,
               initialValue: formData[keyBreed],
-              dataSource: authors,
+              dataSource: breedData,
               validator: (String? value) => fieldValidator(
                 name: keyBreed,
                 value: value,
@@ -242,7 +266,7 @@ class _StoryFormState extends State<StoryForm> {
               placeholder: 'Colour',
               name: keyColour,
               initialValue: formData[keyColour],
-              dataSource: countriesData,
+              dataSource: colourData,
               validator: (String? value) => fieldValidator(
                 name: keyColour,
                 value: value,
@@ -261,7 +285,7 @@ class _StoryFormState extends State<StoryForm> {
               placeholder: 'Gender',
               name: keyGender,
               initialValue: formData[keyGender],
-              dataSource: countriesData,
+              dataSource: genderData,
               validator: (String? value) => fieldValidator(
                 name: keyGender,
                 value: value,
